@@ -76,18 +76,48 @@ class openController extends baseController {
     let content = ctx.params.json;
     let project_id = ctx.params.project_id;
     let dataSync = ctx.params.merge;
+
+    let warnMessage = ''
+
+    /**
+     * 因为以前接口文档写错了，做下兼容
+     */
+    try{
+      if(!dataSync &&ctx.params.dataSync){
+        warnMessage = 'importData Api 已废弃 dataSync 传参，请联系管理员将 dataSync 改为 merge.'
+        dataSync = ctx.params.dataSync
+      }
+    }catch(e){}
+
     let token = ctx.params.token;
     if (!type || !importDataModule[type]) {
       return (ctx.body = yapi.commons.resReturn(null, 40022, '不存在的导入方式'));
     }
 
-    if (!content) {
-      return (ctx.body = yapi.commons.resReturn(null, 40022, 'json 不能为空'));
+    if (!content && !ctx.params.url) {
+      return (ctx.body = yapi.commons.resReturn(null, 40022, 'json 或者 url 参数，不能都为空'));
     }
     try {
+      let request = require("request");// let Promise = require('Promise');
+      let syncGet = function (url){
+          return new Promise(function(resolve, reject){
+              request.get({url : url}, function(error, response, body){
+                  if(error){
+                      reject(error);
+                  }else{
+                      resolve(body);
+                  }
+              });
+          });
+      } 
+      if(ctx.params.url){
+        content = await syncGet(ctx.params.url);
+      }else if(content.indexOf('http://') === 0 || content.indexOf('https://') === 0){
+        content = await syncGet(content);
+      }
       content = JSON.parse(content);
     } catch (e) {
-      return (ctx.body = yapi.commons.resReturn(null, 40022, 'json 格式有误'));
+      return (ctx.body = yapi.commons.resReturn(null, 40022, 'json 格式有误:' + e));
     }
 
     let menuList = await this.interfaceCatModel.list(project_id);
@@ -118,7 +148,7 @@ class openController extends baseController {
     if (errorMessage.length > 0) {
       return (ctx.body = yapi.commons.resReturn(null, 404, errorMessage.join('\n')));
     }
-    ctx.body = yapi.commons.resReturn(null, 0, successMessage);
+    ctx.body = yapi.commons.resReturn(null, 0, successMessage + warnMessage);
   }
 
   async projectInterfaceData(ctx) {
