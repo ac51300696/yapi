@@ -1,5 +1,10 @@
-### v1.5.3
-* cross-request 升级到 2.9
+### v1.5.6
+* 修复 /api/open/import_data 参数bug
+* 修复  /api/open/import_data 文档错误，merge 参数误写为 dataSync
+
+### v1.5.5
+* cross-request 升级到 2.10
+* /api/open/import_data 新增 url 参数，支持服务端 url 导入
 
 ### v1.5.2
 * 新增 openapi `/api/project/get`，可获取项目基本信息
