@@ -1078,7 +1078,7 @@ class projectController extends baseController {
     let projectList = await this.Model.search(q);
     let groupList = await this.groupModel.search(q);
     let interfaceList = await this.interfaceModel.search(q);
-
+    console.log('interfaceList', interfaceList);
     let projectRules = [
       '_id',
       'name',
@@ -1110,6 +1110,7 @@ class projectController extends baseController {
     projectList = commons.filterRes(projectList, projectRules);
     groupList = commons.filterRes(groupList, groupRules);
     interfaceList = commons.filterRes(interfaceList, interfaceRules);
+    console.log('interfaceList', interfaceList);
     let queryList = {
       project: projectList,
       group: groupList,
